@@ -19,5 +19,5 @@ export const BackButton = styled.TouchableOpacity`
 
 export const BackIcon = styled(CaretLeft).attrs(({ theme }) => ({
   color: theme.COLORS.WHITE,
-  size: 36
+  size: 32
 }))``;
