@@ -6,16 +6,23 @@ import { Header } from "@components/Header";
 import { Highlight } from "@components/Highlight";
 import { Button } from "@components/Button";
 import { InputText } from "@components/InputText";
+import { createGroup } from "@storage/group/create-group";
 
 export function NewGroup(){
   const [group, setGroup] = useState('')
 
   const navigation = useNavigation()
 
-  function handleCreateGroup(){
-    navigation.navigate('players', {
-      group
-    })
+  async function handleCreateGroup(){
+    try{
+      await createGroup(group)
+
+      navigation.navigate('players', {
+        group
+      })
+    } catch(error){
+      console.log(error)
+    }
   }
 
   return (
