@@ -1,5 +1,5 @@
 import { Alert, FlatList } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRoute } from "@react-navigation/native";
 
 import { Container, Form, HeaderList, PlayersQuantity } from "./styles";
@@ -15,6 +15,8 @@ import { Button } from "@components/Button";
 import { addPlayerByGroup } from "@storage/player/add-player-by-group";
 import { AppError } from "@utils/app-error";
 import { getPlayersByGroup } from "@storage/player/get-players-by-group";
+import { getPlayersByGroupAndTeam } from "@storage/player/get-players-by-group-and-team";
+import { PlayerStorageDTO } from "@storage/player/PlayerStorageDTO";
 
 interface RouteParams{
   group: string;
@@ -22,7 +24,7 @@ interface RouteParams{
 
 export function Players(){
   const [newPlayerName, setNewPlayerName] = useState('');
-  const [players, setPlayers] = useState<string[]>([]);
+  const [players, setPlayers] = useState<PlayerStorageDTO[]>([]);
   const [team, setTeam] = useState('Time A');
 
   const route = useRoute();
@@ -40,10 +42,6 @@ export function Players(){
 
     try{
       await addPlayerByGroup(newPlayer, group);
-
-      const players = await getPlayersByGroup(group);
-
-      
     } catch(error){
       if(error instanceof AppError){
         Alert.alert('Erro', error.message);
@@ -54,7 +52,22 @@ export function Players(){
     }
   }
 
+  async function fetchPlayersByTeam(){
+    try{
+      const playersByTeam = await getPlayersByGroupAndTeam(group, team);
+
+      setPlayers(playersByTeam);
+    } catch (error){
+      Alert.alert('Erro', 'Não foi possível buscar os jogadores.');
+      console.log(error);
+    }
+  }
+
   const playersQuantity = players.length;
+
+  useEffect(() => {
+    fetchPlayersByTeam();
+  }, [team])
 
   return(
     <Container>
@@ -94,9 +107,9 @@ export function Players(){
 
       <FlatList
         data={players}
-        keyExtractor={(item) => item}
+        keyExtractor={(item) => item.name}
         renderItem={({ item }) => (
-          <PlayerCard name={item} onRemovePlayer={() => {}} />
+          <PlayerCard name={item.name} onRemovePlayer={() => {}} />
         )}
         ListEmptyComponent={<ListEmpty message="Não há jogadores nesse time" />}
         showsVerticalScrollIndicator={false}
