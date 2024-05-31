@@ -42,6 +42,7 @@ export function Players(){
 
     try{
       await addPlayerByGroup(newPlayer, group);
+      fetchPlayersByTeam();
     } catch(error){
       if(error instanceof AppError){
         Alert.alert('Erro', error.message);
