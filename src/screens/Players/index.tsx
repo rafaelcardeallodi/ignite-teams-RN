@@ -18,12 +18,14 @@ import { Filter } from "@components/Filter";
 import { PlayerCard } from "@components/PlayerCard";
 import { ListEmpty } from "@components/ListEmpty";
 import { Button } from "@components/Button";
+import { Loading } from "@components/Loading";
 
 interface RouteParams{
   group: string;
 }
 
 export function Players(){
+  const [isFetchingPlayers, setIsFetchingPlayers] = useState(true);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [players, setPlayers] = useState<PlayerStorageDTO[]>([]);
   const [team, setTeam] = useState('Time A');
@@ -63,12 +65,16 @@ export function Players(){
 
   async function fetchPlayersByTeam(){
     try{
+      setIsFetchingPlayers(true)
+
       const playersByTeam = await getPlayersByGroupAndTeam(group, team);
 
       setPlayers(playersByTeam);
     } catch (error){
       Alert.alert('Erro', 'Não foi possível buscar os jogadores.');
       console.log(error);
+    } finally {
+      setIsFetchingPlayers(false);
     }
   }
 
@@ -154,19 +160,23 @@ export function Players(){
         <PlayersQuantity>{playersQuantity}</PlayersQuantity>
       </HeaderList>
 
-      <FlatList
-        data={players}
-        keyExtractor={(item) => item.name}
-        renderItem={({ item }) => (
-          <PlayerCard name={item.name} onRemovePlayer={() => handleRemovePlayer(item.name)} />
-        )}
-        ListEmptyComponent={<ListEmpty message="Não há jogadores nesse time" />}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          { paddingBottom: 100 }, 
-          players.length === 0 && { flex: 1 }
-        ]}
-      />
+      {isFetchingPlayers ? (
+        <Loading />
+      ) : (
+        <FlatList
+          data={players}
+          keyExtractor={(item) => item.name}
+          renderItem={({ item }) => (
+            <PlayerCard name={item.name} onRemovePlayer={() => handleRemovePlayer(item.name)} />
+          )}
+          ListEmptyComponent={<ListEmpty message="Não há jogadores nesse time" />}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[
+            { paddingBottom: 100 }, 
+            players.length === 0 && { flex: 1 }
+          ]}
+        />
+      )}
 
       <Button variant="secondary" onPress={handleDeleteGroup}>Remover Turma</Button>
     </Container>
