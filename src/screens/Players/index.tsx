@@ -1,12 +1,14 @@
 import { Alert, FlatList, TextInput } from "react-native";
 import { useEffect, useRef, useState } from "react";
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 import { Container, Form, HeaderList, PlayersQuantity } from "./styles";
 import { addPlayerByGroup } from "@storage/player/add-player-by-group";
 import { AppError } from "@utils/app-error";
 import { getPlayersByGroupAndTeam } from "@storage/player/get-players-by-group-and-team";
 import { PlayerStorageDTO } from "@storage/player/PlayerStorageDTO";
+import { removePlayerFromGroup } from "@storage/player/remove-player-from-group";
+import { deleteGroupByName } from "@storage/group/delete-group-by-name";
 
 import { Header } from "@components/Header";
 import { Highlight } from "@components/Highlight";
@@ -16,7 +18,6 @@ import { Filter } from "@components/Filter";
 import { PlayerCard } from "@components/PlayerCard";
 import { ListEmpty } from "@components/ListEmpty";
 import { Button } from "@components/Button";
-import { removePlayerFromGroup } from "@storage/player/remove-player-from-group";
 
 interface RouteParams{
   group: string;
@@ -27,6 +28,7 @@ export function Players(){
   const [players, setPlayers] = useState<PlayerStorageDTO[]>([]);
   const [team, setTeam] = useState('Time A');
 
+  const navigation = useNavigation();
   const route = useRoute();
   const { group } = route.params as RouteParams;
 
@@ -78,6 +80,32 @@ export function Players(){
       Alert.alert('Remover pessoa', 'Não foi possível remover o jogador.');
       console.log(error);
     }
+  }
+
+  async function groupRemove(){
+    try{
+      await deleteGroupByName(group);
+
+      navigation.navigate('groups')
+    } catch(error){
+      Alert.alert('Remover turma', 'Não foi possível remover a turma.');
+      console.log(error);
+    }
+  }
+
+  async function handleDeleteGroup(){
+    Alert.alert(
+      'Remover Turma', 
+      'Deseja realmente remover essa turma?', 
+      [
+        { text: 'Não', style: 'cancel' },
+        { 
+          text: 'Sim', 
+          style: 'destructive', 
+          onPress: groupRemove
+        }
+      ]
+    )
   }
 
   const playersQuantity = players.length;
@@ -140,7 +168,7 @@ export function Players(){
         ]}
       />
 
-      <Button variant="secondary">Remover Turma</Button>
+      <Button variant="secondary" onPress={handleDeleteGroup}>Remover Turma</Button>
     </Container>
   )
 }
