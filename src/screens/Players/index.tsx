@@ -16,6 +16,7 @@ import { Filter } from "@components/Filter";
 import { PlayerCard } from "@components/PlayerCard";
 import { ListEmpty } from "@components/ListEmpty";
 import { Button } from "@components/Button";
+import { removePlayerFromGroup } from "@storage/player/remove-player-from-group";
 
 interface RouteParams{
   group: string;
@@ -65,6 +66,16 @@ export function Players(){
       setPlayers(playersByTeam);
     } catch (error){
       Alert.alert('Erro', 'Não foi possível buscar os jogadores.');
+      console.log(error);
+    }
+  }
+
+  async function handleRemovePlayer(playerName: string){
+    try{ 
+      await removePlayerFromGroup(playerName, group);
+      fetchPlayersByTeam();
+    } catch(error){
+      Alert.alert('Remover pessoa', 'Não foi possível remover o jogador.');
       console.log(error);
     }
   }
@@ -119,7 +130,7 @@ export function Players(){
         data={players}
         keyExtractor={(item) => item.name}
         renderItem={({ item }) => (
-          <PlayerCard name={item.name} onRemovePlayer={() => {}} />
+          <PlayerCard name={item.name} onRemovePlayer={() => handleRemovePlayer(item.name)} />
         )}
         ListEmptyComponent={<ListEmpty message="Não há jogadores nesse time" />}
         showsVerticalScrollIndicator={false}
